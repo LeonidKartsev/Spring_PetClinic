@@ -1,0 +1,10 @@
+FROM maven as builder
+WORKDIR ./spring-petclinic
+COPY ./src ./src
+COPY ./pom.xml ./pom.xml
+RUN mvn package
+
+FROM openjdk:17
+COPY --from=builder ./spring-petclinic/target/*.jar /opt/app.jar
+ENTRYPOINT ["java", "-jar", "/opt/app.jar"]
+

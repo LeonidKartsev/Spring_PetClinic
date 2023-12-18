@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  mysqlserver:
+    image: mysql/mysql-server
+    container_name: mysqlserver
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=petclinic
+      - MYSQL_PASSWORD=petclinic
+      - MYSQL_DATABASE=petclinic
+    networks:
+      - mysqlnet
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
+  springboot-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: springboot-server
+    restart: always
+    depends_on:
+      mysqlserver:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=mysql
+    ports:
+      - "8080:8080"
+    networks:
+      - mysqlnet
+
+networks:
+  mysqlnet:
+    name: mysqlnet
+    external: true
